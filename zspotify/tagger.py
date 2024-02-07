@@ -2,6 +2,9 @@ import music_tag
 import requests
 from mutagen import id3
 from pathlib import Path
+from mutagen.oggvorbis import OggVorbis
+from mutagen.flac import Picture
+from base64 import b64encode
 
 class AudioTagger:
     
@@ -52,22 +55,43 @@ class AudioTagger:
 
     def _set_other_tags(self, fullpath, artist, artist_array, album_artist, name, album_name, release_year, disc_number, 
                         track_number, track_id_str, image_url):
-        tags = music_tag.load_file(fullpath)
 
+        """ Try to save dummy artist once to avoid corrupt header
+            idk wtf is going on here
+            See: https://github.com/quodlibet/mutagen/issues/591 """
+            
+        tags = OggVorbis(fullpath)
+        tags["artist"] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        try:
+            tags.save(padding=lambda info: 0)
+        except mutagen.oggvorbis.OggVorbisHeaderError:
+            pass
+        
         other_map = {
-            "artist": artist_array,
-            "album_artist": album_artist,
-            "tracktitle": name,
-            "album": album_name,
-            "year": release_year,
-            "discnumber": str(disc_number) if disc_number else None,
-            "tracknumber": track_number,
-            "comment": "https://open.spotify.com/track/" + track_id_str if track_id_str else None
+            #"artist": ['dummy artist'],
+            #"artist": artist_array,
+            #"album_artist": album_artist,
+            #"tracktitle": name,
+            #"album": album_name,
+            #"year": release_year,
+            #"discnumber": str(disc_number) if disc_number else None,
+            #"tracknumber": str(track_number),
+            #"comment": f"id[spotify.com:track:{track_id_str}]" if track_id_str else None
         }
 
-        for tag, value in other_map.items():
-            if value:
-                tags[tag] = value
+        tags2 = OggVorbis(fullpath)
+        tags2["artist"] = artist_array
+        tags2["album_artist"] = album_artist
+        tags2["title"] = name
+        tags2["album"] = album_name
+        tags2["year"] = release_year
+        tags2["discnumber"] = str(disc_number) if disc_number else None
+        tags2["tracknumber"] = str(track_number)
+        tags2["comment"] = f"id[spotify.com:track:{track_id_str}]" if track_id_str else None
+        #except:
+        #    print("WTF IS GOING ON")
+        tags2.save(padding=lambda info: 0)
+
         if image_url:
             albumart = requests.get(image_url).content
             cover_path = f"{Path(fullpath).parent.resolve()}/cover.jpg"
@@ -76,6 +100,13 @@ class AudioTagger:
                 print(f"Saving cover to {cover_path}")
                 cover_file.write(albumart)
             if albumart:
-                tags["artwork"] = albumart
-
-        tags.save(padding=lambda info: 0)
+                covart = Picture()
+                covart.data = albumart
+                covart.type = 3  # Cover (front)
+                print("Embedding cover image")
+                tags2['metadata_block_picture'] = b64encode(covart.write()).decode('ascii')
+                #audio.save()
+        try:
+            tags2.save(padding=lambda info: 0)
+        except:
+            print("[META] Cover art caused metadata resizing issue")
