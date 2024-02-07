@@ -59,7 +59,7 @@ class AudioTagger:
         """ Try to save dummy artist once to avoid corrupt header
             idk wtf is going on here
             See: https://github.com/quodlibet/mutagen/issues/591 """
-            
+
         tags = OggVorbis(fullpath)
         tags["artist"] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         try:
@@ -81,7 +81,7 @@ class AudioTagger:
 
         tags2 = OggVorbis(fullpath)
         tags2["artist"] = artist_array
-        tags2["album_artist"] = album_artist
+        tags2["albumartist"] = album_artist
         tags2["title"] = name
         tags2["album"] = album_name
         tags2["year"] = release_year
