@@ -264,7 +264,7 @@ class ZSpotify:
         album_name,
     ):
         if caller == "album":
-            filename = f"{audio_number}. {audio_name}"
+            filename = f"{artist_name} - {audio_name}"
 
             if self.album_in_filename:
                 filename = f"{album_name} " + filename
@@ -313,12 +313,13 @@ class ZSpotify:
         artist_name = track.get("artist_name")
         album_artist = track.get("album_artist")
         album_name = track.get("album_name")
+        artist_array = track.get("artist_array")
 
         filename = self.generate_filename(
             caller,
             audio_name,
             audio_number,
-            artist_name,
+            album_artist,
             album_name,
         )
 
@@ -351,6 +352,7 @@ class ZSpotify:
         self.tagger.set_audio_tags(
             output_path,
             artists=artist_name,
+            artist_array=artist_array,
             name=audio_name,
             album_name=album_name,
             release_year=track["release_year"],
@@ -450,15 +452,16 @@ class ZSpotify:
                 disc_number_flag = True
 
         # Sanitize beforehand
+        album_artist = RespotUtils.sanitize_data(album["album_artist"])
         artists = RespotUtils.sanitize_data(album["artists"])
         album_name = RespotUtils.sanitize_data(
-            f"{album['release_date']} - {album['name']}"
+            f"{album['name']}"
         )
 
         print(f"Downloading {artists} - {album_name} album")
 
         # Concat download path
-        basepath = self.music_dir / artists / album_name
+        basepath = self.music_dir / album_artist / album_name
 
         for song in songs:
             # Append disc number to filepath if more than 1 disc

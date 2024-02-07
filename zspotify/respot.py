@@ -198,6 +198,7 @@ class RespotRequest:
                 "id": track_id,
                 "artist_id": artist_id,
                 "artist_name": RespotUtils.conv_artist_format(artists),
+                "artist_array": artists,
                 "album_artist": info["tracks"][0]["album"]["artists"][0]["name"],
                 "album_name": info["tracks"][0]["album"]["name"],
                 "audio_name": info["tracks"][0]["name"],
@@ -316,6 +317,7 @@ class RespotRequest:
 
         if match := re.search("(\\d{4})", resp["release_date"]):
             return {
+                "album_artist": resp["artists"][0]["name"],
                 "artists": RespotUtils.conv_artist_format(artists),
                 "name": resp["name"],
                 "total_tracks": resp["total_tracks"],
@@ -323,6 +325,7 @@ class RespotRequest:
             }
         else:
             return {
+                "album_artist": resp["artists"][0]["name"],
                 "artists": RespotUtils.conv_artist_format(artists),
                 "name": resp["name"],
                 "total_tracks": resp["total_tracks"],
@@ -786,7 +789,7 @@ class RespotUtils:
     @staticmethod
     def conv_artist_format(artists: list) -> str:
         """Returns string of artists separated by commas"""
-        return ", ".join(artists)
+        return '\\\\'.join(artists)
 
     @staticmethod
     def sanitize_data(value: str) -> str:
