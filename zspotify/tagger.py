@@ -12,7 +12,7 @@ class AudioTagger:
         pass
 
     def set_audio_tags(self, fullpath, artists=None, artist_array=None, name=None, album_name=None, release_year=None,
-                       disc_number=None, track_number=None, track_id_str=None, album_artist=None, image_url=None):
+                       disc_number=None, track_number=None, track_id_str=None, album_artist=None, image_url=None, genres=None):
         """sets music_tag metadata using mutagen if possible"""
         
         album_artist = album_artist or artists  # Use artists if album_artist is None
@@ -24,7 +24,7 @@ class AudioTagger:
                                track_number, track_id_str, album_artist, image_url)
         else:
             self._set_other_tags(fullpath, artists, artist_array, album_artist, name, album_name, release_year, disc_number,
-                                 track_number, track_id_str, image_url)
+                                 track_number, track_id_str, image_url, genres)
 
     def _set_mp3_tags(self, fullpath, artist, name, album_name, release_year, disc_number, 
                       track_number, track_id_str, album_artist, image_url):
@@ -54,7 +54,7 @@ class AudioTagger:
         tags.save()
 
     def _set_other_tags(self, fullpath, artist, artist_array, album_artist, name, album_name, release_year, disc_number, 
-                        track_number, track_id_str, image_url):
+                        track_number, track_id_str, image_url, genres):
 
         """ Try to save dummy artist once to avoid corrupt header
             idk wtf is going on here
@@ -88,6 +88,7 @@ class AudioTagger:
         tags2["discnumber"] = str(disc_number) if disc_number else None
         tags2["tracknumber"] = str(track_number)
         tags2["comment"] = f"id[spotify.com:track:{track_id_str}]" if track_id_str else None
+        tags2["genre"] = genres
         #except:
         #    print("WTF IS GOING ON")
         tags2.save(padding=lambda info: 0)

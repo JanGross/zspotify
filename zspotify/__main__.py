@@ -313,6 +313,7 @@ class ZSpotify:
         artist_name = track.get("artist_name")
         album_artist = track.get("album_artist")
         album_name = track.get("album_name")
+        genres = track.get("genres")
         artist_array = track.get("artist_array")
 
         filename = self.generate_filename(
@@ -361,6 +362,7 @@ class ZSpotify:
             album_artist=album_artist,
             track_id_str=track["scraped_song_id"],
             image_url=track["image_url"],
+            genres=genres
         )
         print(f"Finished downloading {filename}")
 

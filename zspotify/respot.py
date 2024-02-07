@@ -172,50 +172,59 @@ class RespotRequest:
 
     def get_track_info(self, track_id) -> dict:
         """Retrieves metadata for downloaded songs"""
-        try:
-            info = json.loads(
-                self.authorized_get_request(
-                    "https://api.spotify.com/v1/tracks?ids="
-                    + track_id
-                    + "&market=from_token"
-                ).text
-            )
+        #try:
+        info = json.loads(
+            self.authorized_get_request(
+                "https://api.spotify.com/v1/tracks?ids="
+                + track_id
+                + "&market=from_token"
+            ).text
+        )
+        artist_info = json.loads(
+            self.authorized_get_request(
+                "https://api.spotify.com/v1/artists?ids="
+                + info["tracks"][0]["artists"][0]["id"]
+            ).text
+        )["artists"][0]
 
-            # Sum the size of the images, compares and saves the index of the
-            # largest image size
-            sum_total = []
-            for sum_px in info["tracks"][0]["album"]["images"]:
-                sum_total.append(sum_px["height"] + sum_px["width"])
+        # Sum the size of the images, compares and saves the index of the
+        # largest image size
+        sum_total = []
+        for sum_px in info["tracks"][0]["album"]["images"]:
+            sum_total.append(sum_px["height"] + sum_px["width"])
 
-            img_index = sum_total.index(max(sum_total)) if sum_total else -1
+        img_index = sum_total.index(max(sum_total)) if sum_total else -1
 
-            artist_id = info["tracks"][0]["artists"][0]["id"]
+        artist_id = info["tracks"][0]["artists"][0]["id"]
 
-            artists = [data["name"] for data in info["tracks"][0]["artists"]]
+        artists = [data["name"] for data in info["tracks"][0]["artists"]]
+        print(f"DEBUG: {artist_info}")
+        genres = artist_info["genres"] if artist_info["genres"] else None
+        print(genres)
+        # TODO: Implement genre checking
+        return {
+            "id": track_id,
+            "artist_id": artist_id,
+            "artist_name": RespotUtils.conv_artist_format(artists),
+            "artist_array": artists,
+            "album_artist": info["tracks"][0]["album"]["artists"][0]["name"],
+            "album_name": info["tracks"][0]["album"]["name"],
+            "audio_name": info["tracks"][0]["name"],
+            "image_url": info["tracks"][0]["album"]["images"][img_index]["url"] if img_index >= 0 else None,
+            "release_year": info["tracks"][0]["album"]["release_date"].split("-")[0],
+            "disc_number": info["tracks"][0]["disc_number"],
+            "audio_number": info["tracks"][0]["track_number"],
+            "scraped_song_id": info["tracks"][0]["id"],
+            "is_playable": info["tracks"][0]["is_playable"],
+            "release_date": info["tracks"][0]["album"]["release_date"],
+            "genres": genres,
+        }
 
-            # TODO: Implement genre checking
-            return {
-                "id": track_id,
-                "artist_id": artist_id,
-                "artist_name": RespotUtils.conv_artist_format(artists),
-                "artist_array": artists,
-                "album_artist": info["tracks"][0]["album"]["artists"][0]["name"],
-                "album_name": info["tracks"][0]["album"]["name"],
-                "audio_name": info["tracks"][0]["name"],
-                "image_url": info["tracks"][0]["album"]["images"][img_index]["url"] if img_index >= 0 else None,
-                "release_year": info["tracks"][0]["album"]["release_date"].split("-")[0],
-                "disc_number": info["tracks"][0]["disc_number"],
-                "audio_number": info["tracks"][0]["track_number"],
-                "scraped_song_id": info["tracks"][0]["id"],
-                "is_playable": info["tracks"][0]["is_playable"],
-                "release_date": info["tracks"][0]["album"]["release_date"],
-            }
-
-        except Exception as e:
+        """except Exception as e:
             print("###   get_track_info - FAILED TO QUERY METADATA   ###")
             print("track_id:", track_id)
             print(e)
-            return None
+            return None"""
 
     def get_all_user_playlists(self):
         """Returns list of users playlists"""
