@@ -23,7 +23,7 @@ try:
     __version__ = metadata.version("zspotify")
 except metadata.PackageNotFoundError:
     __version__ = "unknown"
-
+__version__ = "Custom 1.1"
 
 class ZSpotify:
     def __init__(self):

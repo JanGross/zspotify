@@ -88,7 +88,8 @@ class AudioTagger:
         tags2["discnumber"] = str(disc_number) if disc_number else None
         tags2["tracknumber"] = str(track_number)
         tags2["comment"] = f"id[spotify.com:track:{track_id_str}]" if track_id_str else None
-        tags2["genre"] = genres
+        if genres:
+            tags2["genre"] = genres
         #except:
         #    print("WTF IS GOING ON")
         tags2.save(padding=lambda info: 0)
