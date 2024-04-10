@@ -262,9 +262,10 @@ class ZSpotify:
         audio_number,
         artist_name,
         album_name,
+        track_artist
     ):
         if caller == "album":
-            filename = f"{artist_name} - {audio_name}"
+            filename = f"{track_artist} - {audio_name}"
 
             if self.album_in_filename:
                 filename = f"{album_name} " + filename
@@ -322,6 +323,7 @@ class ZSpotify:
             audio_number,
             album_artist,
             album_name,
+            artist_name
         )
 
         base_path = path or self.music_dir
